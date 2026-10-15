@@ -36,6 +36,11 @@ extension Color {
     /// #73D2DE: soft glow, cool accents, secondary color at night
     static let frostedBlue = Color(hex: 0x73D2DE)
 
+    /// Plant pot
+    static let terracotta = Color(hex: 0xC4673F)
+    static let terracottaLight = Color(hex: 0xD98059)
+    static let terracottaDeep = Color(hex: 0xA9532F)
+
     /// Lighter tints used for gradients (not part of the five brand colors).
     static let sunflowerGoldLight = Color(hex: 0xFFD27A)
     static let raspberryRedLight = Color(hex: 0xE8366F)

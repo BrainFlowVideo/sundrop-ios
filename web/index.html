@@ -479,7 +479,7 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
         <ul>
           <li>Go through the four onboarding pages and pick weekly or monthly.</li>
           <li>Tap the jar or Add SunDrop, write a note, pick tags and drop it in. Watch the lid, the slip and the wink.</li>
-          <li>Add sample drops to grow the plant: leaves pop out around drop 3 and a sunflower blooms at drop 12. Fast-forward a day to see the countdown change and the streak hold.</li>
+          <li>Add sample drops to grow the plant: it starts as a sprout, leaves pop out from drop 2 and a sunflower blooms at drop 10. Fast-forward a day to see the countdown change and the streak hold.</li>
           <li>Open the gear and switch Appearance to Night.</li>
           <li>Tap Shake to reminisce for a random memory.</li>
           <li>Tap the little plant pot for a cheer.</li>
@@ -633,34 +633,39 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
   }
   var lastLeaves = -1;
   // Growth is driven by how many SunDrops are in the jar:
-  //  1-10 the stem grows, 3-8 leaves pop out, 10 a bud forms, 11 it opens, 12+ full sunflower.
-  var BLOOM_AT = 12;
+  //  0 a little sprout, 1 it grows, 2-7 leaves pop out, 8 a bud forms, 9 it opens, 10+ full sunflower.
+  var BLOOM_AT = 10;
   function plantStage(n) {
-    if (n === 0) return 'A seed is resting in the pot. Add a SunDrop to wake it up.';
-    if (n < 3) return 'A tiny sprout is growing.';
-    if (n < 10) return 'A leafy plant with ' + Math.min(n - 2, 6) + ' leaves.';
-    if (n === 10) return 'A flower bud is forming.';
-    if (n === 11) return 'The sunflower is starting to open.';
+    if (n === 0) return 'A little sprout in the pot. Add a SunDrop to help it grow.';
+    if (n < 2) return 'The sprout is growing.';
+    if (n < BLOOM_AT - 2) return 'A leafy plant with ' + Math.min(n - 1, 6) + ' leaves.';
+    if (n === BLOOM_AT - 2) return 'A flower bud is forming.';
+    if (n === BLOOM_AT - 1) return 'The sunflower is starting to open.';
     return 'A sunflower in full bloom!';
   }
   function renderPlant() {
     var n = state.entries.length;
-    var h = n === 0 ? 0 : Math.min(8 + n * 5, 58);
+    var h = Math.min(20 + n * 5.5, 58);
     var top = 94 - h, svg = '';
     var grew = lastLeaves >= 0 && n > lastLeaves;
-    var L = n < 3 ? 0 : Math.min(n - 2, 6);
+    var L = n < 2 ? 0 : Math.min(n - 1, 6);
     var leaves = '';
     for (var i = 0; i < L; i++) {
       var left = i % 2 === 0, off = Math.min(10 + i * 6, h - 4), y = 94 - off, x = left ? 27 : 53;
-      var isNew = grew && i === L - 1 && n <= 8;
+      var isNew = grew && i === L - 1 && n <= 7;
       leaves += '<ellipse class="' + (isNew ? 'leaf-new' : '') + '" cx="' + x + '" cy="' + y + '" rx="11" ry="5.5" fill="url(#leafG)" transform="rotate(' + (left ? -28 : 28) + ' ' + x + ' ' + y + ')"/>';
     }
+    if (n < 2) {
+      var sc = n === 0 ? 6.5 : 8;
+      leaves += '<ellipse class="' + (grew ? 'leaf-new' : '') + '" cx="' + (40 - sc - 1) + '" cy="' + (top + 3) + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(-25 ' + (40 - sc - 1) + ' ' + (top + 3) + ')"/>' +
+        '<ellipse class="' + (grew ? 'leaf-new' : '') + '" cx="' + (40 + sc + 1) + '" cy="' + (top + 3) + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(25 ' + (40 + sc + 1) + ' ' + (top + 3) + ')"/>';
+    }
     var head = '';
-    if (n >= 10) {
-      var open = n >= 12 ? 1 : n === 11 ? .55 : 0;
+    if (n >= BLOOM_AT - 2) {
+      var open = n >= BLOOM_AT ? 1 : n === BLOOM_AT - 1 ? .55 : 0;
       var petals = '';
       for (var k = 0; k < 12; k++) petals += '<ellipse cx="40" cy="' + (top - 17) + '" rx="5.2" ry="10" fill="url(#petalG)" transform="rotate(' + (k * 30) + ' 40 ' + top + ')"/>';
-      var bloomNew = grew && (n === 11 || n === 12);
+      var bloomNew = grew && (n === BLOOM_AT - 1 || n === BLOOM_AT);
       head = '<g class="' + (bloomNew ? 'bloom-new' : '') + '">' +
         (open > 0 ? '<g style="transform-box:fill-box;transform-origin:center;transform:scale(' + open + ')">' + petals + '</g>' : '') +
         '<circle cx="40" cy="' + top + '" r="' + (open > 0 ? 11 : 9) + '" fill="' + (open > 0 ? 'url(#centerG)' : '#4F9D5D') + '"/>' +
@@ -679,10 +684,9 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
       '<g class="sway">' +
       (h > 0 ? '<rect class="' + (grew ? 'stem-new' : '') + '" x="37.5" y="' + top + '" width="5" height="' + (h + 4) + '" rx="2.5" fill="#4F9D5D"/>' : '') +
       leaves + head + '</g>' +
-      '<path d="M10 90h60v10l-6 0-4 28h-40l-4-28-6 0z" fill="#D81159"/><rect x="8" y="88" width="64" height="12" rx="6" fill="#E8366F"/>' +
+      '<path d="M10 90h60v10l-6 0-4 28h-40l-4-28-6 0z" fill="#C4673F"/><path d="M60 100l-4 28h4z" fill="#A9532F" opacity=".55"/><rect x="8" y="88" width="64" height="12" rx="6" fill="#D98059"/><rect x="12" y="89.5" width="30" height="3" rx="1.5" fill="#fff" opacity=".22"/>' +
       '<ellipse cx="40" cy="89.5" rx="27" ry="4.5" fill="#6B4632"/>' +
-      (n === 0 ? '<ellipse cx="40" cy="87" rx="8" ry="4" fill="#8A5E44"/>' : '') +
-      '<circle cx="31" cy="112" r="2.6" fill="#FFF1D6"/><circle cx="49" cy="112" r="2.6" fill="#FFF1D6"/>' +
+            '<circle cx="31" cy="112" r="2.6" fill="#FFF1D6"/><circle cx="49" cy="112" r="2.6" fill="#FFF1D6"/>' +
       '<ellipse cx="25" cy="117" rx="4" ry="2.2" fill="#FFF1D6" opacity=".35"/><ellipse cx="55" cy="117" rx="4" ry="2.2" fill="#FFF1D6" opacity=".35"/>' +
       '<path d="M36 117 Q40 121 44 117" stroke="#FFF1D6" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
     $('#plant').innerHTML = svg;

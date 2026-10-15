@@ -2,28 +2,27 @@ import SwiftUI
 
 /// A potted plant that grows every time a SunDrop is added to the jar.
 ///
-/// - 0 drops: a seed resting in the soil
-/// - 1–2: a tiny sprout
-/// - 3–8: leaves pop out, one at a time
-/// - 9: the stem reaches full height
-/// - 10: a flower bud forms
-/// - 11: the sunflower starts to open
-/// - 12+: a full sunflower in bloom
+/// - 0 drops: a little sprout
+/// - 1: the sprout grows
+/// - 2–7: leaves pop out, one at a time
+/// - 8: a flower bud forms
+/// - 9: the sunflower starts to open
+/// - 10+: a full sunflower in bloom
 struct PlantView: View {
     /// Number of SunDrops in the jar.
     let count: Int
     /// Bump this number to make the plant hop (used when it is tapped).
     var hopTrigger: Int = 0
 
-    static let bloomAt = 12
+    static let bloomAt = 10
 
     @State private var sway = false
 
     private let stemColor = Color(hex: 0x4F9D5D)
 
     private var n: Int { max(0, count) }
-    private var stemHeight: CGFloat { n == 0 ? 0 : min(8 + CGFloat(n) * 5, 58) }
-    private var leafCount: Int { n < 3 ? 0 : min(n - 2, 6) }
+    private var stemHeight: CGFloat { min(20 + CGFloat(n) * 5.5, 58) }
+    private var leafCount: Int { n < 2 ? 0 : min(n - 1, 6) }
     /// 0 = closed bud, 0.55 = opening, 1 = full bloom
     private var openness: CGFloat { n >= Self.bloomAt ? 1 : (n == Self.bloomAt - 1 ? 0.55 : 0) }
     private var headY: CGFloat { 94 - stemHeight }
@@ -63,11 +62,11 @@ struct PlantView: View {
 
     private var stageDescription: String {
         switch n {
-        case 0: "A seed resting in the pot. Add a SunDrop to wake it up."
-        case 1...2: "A tiny sprout is growing."
-        case 3...9: "A leafy plant with \(leafCount) leaves."
-        case 10: "A flower bud is forming."
-        case 11: "The sunflower is starting to open."
+        case 0: "A little sprout in the pot. Add a SunDrop to help it grow."
+        case 1: "The sprout is growing."
+        case 2..<(Self.bloomAt - 2): "A leafy plant with \(leafCount) leaves."
+        case Self.bloomAt - 2: "A flower bud is forming."
+        case Self.bloomAt - 1: "The sunflower is starting to open."
         default: "A sunflower in full bloom!"
         }
     }
@@ -81,6 +80,15 @@ struct PlantView: View {
                 .fill(stemColor)
                 .frame(width: 5, height: stemHeight + 4)
                 .position(x: 40, y: 94 - stemHeight / 2 + 2)
+
+            // Sprout seed leaves (before the first real leaves)
+            if n < 2 {
+                let sc: CGFloat = n == 0 ? 6.5 : 8
+                PlantLeaf().frame(width: sc * 2, height: sc)
+                    .rotationEffect(.degrees(-25)).position(x: 40 - sc - 1, y: headY + 3)
+                PlantLeaf().frame(width: sc * 2, height: sc)
+                    .rotationEffect(.degrees(25)).position(x: 40 + sc + 1, y: headY + 3)
+            }
 
             // Leaves
             ForEach(0..<leafCount, id: \.self) { i in
@@ -140,16 +148,14 @@ struct PlantView: View {
 
     private var pot: some View {
         ZStack {
-            PotShape().fill(Color.raspberryRed)
+            PotShape().fill(Color.terracotta)
+            PotShade().fill(Color.terracottaDeep.opacity(0.55))
             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(Color(hex: 0xE8366F))
+                .fill(Color.terracottaLight)
                 .frame(width: 64, height: 12)
                 .position(x: 40, y: 94)
             // Soil
             Ellipse().fill(Color(hex: 0x6B4632)).frame(width: 54, height: 9).position(x: 40, y: 89.5)
-            if n == 0 {
-                Ellipse().fill(Color(hex: 0x8A5E44)).frame(width: 16, height: 8).position(x: 40, y: 87)
-            }
             // Face
             Circle().fill(Color(hex: 0xFFF1D6)).frame(width: 5.2, height: 5.2).position(x: 31, y: 112)
             Circle().fill(Color(hex: 0xFFF1D6)).frame(width: 5.2, height: 5.2).position(x: 49, y: 112)
@@ -182,6 +188,18 @@ private struct PotShape: Shape {
     }
 }
 
+private struct PotShade: Shape {
+    func path(in r: CGRect) -> Path {
+        let sx = r.width / 80, sy = r.height / 130
+        var path = Path()
+        path.move(to: CGPoint(x: 60 * sx, y: 100 * sy))
+        path.addLine(to: CGPoint(x: 56 * sx, y: 128 * sy))
+        path.addLine(to: CGPoint(x: 60 * sx, y: 128 * sy))
+        path.closeSubpath()
+        return path
+    }
+}
+
 private struct PlantLeaf: View {
     var body: some View {
         Ellipse().fill(LinearGradient(
@@ -199,7 +217,7 @@ private struct PlantHop {
 #Preview("Plant stages") {
     ScrollView(.horizontal) {
         HStack(spacing: 16) {
-            ForEach([0, 1, 3, 6, 8, 10, 11, 12], id: \.self) { PlantView(count: $0) }
+            ForEach([0, 1, 3, 5, 7, 8, 9, 10], id: \.self) { PlantView(count: $0) }
         }
         .padding()
     }
