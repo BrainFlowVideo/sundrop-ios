@@ -7,7 +7,7 @@ Built with SwiftUI, SwiftData and the Observation framework. Everything is store
 ## Features
 
 - **Skeuomorphic jar** that fills with paper slips, winks and squishes when you add a SunDrop, with a spring-physics drop animation. Tap the jar to add one
-- **Growing plant** in a terracotta pot: it starts as a little sprout, grows with every SunDrop, pops out leaves from the second drop, forms a bud at eight and blooms into a sunflower at ten. Tap the pot for one of five little cheers. Floating sparkles too
+- **Growing plant** in a terracotta pot: it starts as a little sprout, grows with every SunDrop, gets a new stem section and leaf with each of the first five drops, forms a bud at six and blooms into a sunflower at seven with a confetti celebration. Tap the pot for one of five little cheers. Floating sparkles too
 - **Onboarding** in four pages: welcome, your name, daily reminder time, weekly or monthly review
 - **Multi-media entries**: a note, category tags, a photo or a short video, captured with the **camera** or picked from your library
 - **Day and Night modes**: a pale gold and frost sunrise by day, a deep teal evening by night; follow the system or choose in Settings

@@ -93,6 +93,14 @@ struct HomeView: View {
             .padding(.top, 8)
         }
         .onShake { vm.reminisce(from: entries) }
+        .onChange(of: entries.count) { old, new in
+            if old < PlantView.bloomAt, new >= PlantView.bloomAt {
+                Task {
+                    try? await Task.sleep(for: .milliseconds(450))
+                    vm.celebrateBloom()
+                }
+            }
+        }
         .sheet(isPresented: $vm.showAddSheet) {
             AddSunDropSheet { draft in
                 Task { await vm.add(draft: draft, context: context) }

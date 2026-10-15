@@ -26,6 +26,14 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(vm.plantHopTrigger, before + 1)
     }
 
+    func testBloomCelebrationShowsMessageAndHops() {
+        let vm = HomeViewModel()
+        let before = vm.plantHopTrigger
+        vm.celebrateBloom()
+        XCTAssertNotNil(vm.cheerMessage)
+        XCTAssertEqual(vm.plantHopTrigger, before + 1)
+    }
+
     func testOpenAddShowsSheet() {
         let vm = HomeViewModel()
         vm.openAdd()

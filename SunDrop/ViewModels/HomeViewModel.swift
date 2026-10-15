@@ -52,16 +52,23 @@ final class HomeViewModel {
         var index = Int.random(in: 0..<Self.cheers.count)
         while index == lastCheerIndex { index = Int.random(in: 0..<Self.cheers.count) }
         lastCheerIndex = index
-        let message = Self.cheers[index]
-
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        present(message: Self.cheers[index], duration: 3.2)
+    }
+
+    /// Shown when the sunflower blooms.
+    func celebrateBloom() {
+        present(message: "Your sunflower bloomed! You grew this, one SunDrop at a time. 🌻", duration: 4.5)
+    }
+
+    private func present(message: String, duration: Double) {
         plantHopTrigger += 1
         withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) { cheerMessage = message }
         UIAccessibility.post(notification: .announcement, argument: message)
 
         cheerTask?.cancel()
         cheerTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(3.2))
+            try? await Task.sleep(for: .seconds(duration))
             guard !Task.isCancelled else { return }
             withAnimation(.easeIn(duration: 0.25)) { self?.cheerMessage = nil }
         }

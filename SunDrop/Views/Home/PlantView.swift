@@ -3,28 +3,27 @@ import SwiftUI
 /// A potted plant that grows every time a SunDrop is added to the jar.
 ///
 /// - 0 drops: a little sprout
-/// - 1: the sprout grows
-/// - 2–7: leaves pop out, one at a time
-/// - 8: a flower bud forms
-/// - 9: the sunflower starts to open
-/// - 10+: a full sunflower in bloom
+/// - 1–5: a new stem section and a new leaf with every drop
+/// - 6: a sunflower bud pops up
+/// - 7+: the sunflower blooms, with a confetti celebration
 struct PlantView: View {
     /// Number of SunDrops in the jar.
     let count: Int
     /// Bump this number to make the plant hop (used when it is tapped).
     var hopTrigger: Int = 0
 
-    static let bloomAt = 10
+    static let bloomAt = 7
 
     @State private var sway = false
+    @State private var burst = false
+    @State private var showConfetti = false
 
     private let stemColor = Color(hex: 0x4F9D5D)
 
     private var n: Int { max(0, count) }
-    private var stemHeight: CGFloat { min(20 + CGFloat(n) * 5.5, 58) }
-    private var leafCount: Int { n < 2 ? 0 : min(n - 1, 6) }
-    /// 0 = closed bud, 0.55 = opening, 1 = full bloom
-    private var openness: CGFloat { n >= Self.bloomAt ? 1 : (n == Self.bloomAt - 1 ? 0.55 : 0) }
+    private var stemHeight: CGFloat { min(20 + CGFloat(n) * 7.5, 58) }
+    private var leafCount: Int { min(n, 5) }
+    private var isBloomed: Bool { n >= Self.bloomAt }
     private var headY: CGFloat { 94 - stemHeight }
 
     var body: some View {
@@ -56,17 +55,67 @@ struct PlantView: View {
         .onAppear {
             withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) { sway = true }
         }
+        .overlay(alignment: .top) { confetti }
+        .onChange(of: n) { old, new in
+            if old < Self.bloomAt, new >= Self.bloomAt { celebrate() }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(stageDescription)
+    }
+
+    // MARK: Celebration
+
+    private static let confettiColors: [Color] = [
+        .sunflowerGold, .raspberryRed, .frostedBlue, .sunTeal, .sunflowerGoldLight, .vintageBerry
+    ]
+
+    /// Pre-rolled so every burst is laid out the same way during one animation.
+    private let pieces: [(dx: CGFloat, dy: CGFloat, spin: Double, size: CGFloat)] = (0..<30).map { _ in
+        let angle = Double.random(in: -150 ... -30) * .pi / 180
+        let distance = CGFloat.random(in: 70...170)
+        return (CGFloat(cos(angle)) * distance, CGFloat(sin(angle)) * distance,
+                Double.random(in: -540...540), CGFloat.random(in: 6...10))
+    }
+
+    @ViewBuilder private var confetti: some View {
+        if showConfetti {
+            ZStack {
+                ForEach(0..<pieces.count, id: \.self) { i in
+                    let piece = pieces[i]
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Self.confettiColors[i % Self.confettiColors.count])
+                        .frame(width: piece.size, height: piece.size * 1.5)
+                        .rotationEffect(.degrees(burst ? piece.spin : 0))
+                        .offset(x: burst ? piece.dx : 0, y: burst ? piece.dy + 90 : 20)
+                        .opacity(burst ? 0 : 1)
+                }
+            }
+            .frame(width: 1, height: 1)
+            .offset(y: 30)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+    }
+
+    private func celebrate() {
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        guard !UIAccessibility.isReduceMotionEnabled else { return }
+        burst = false
+        showConfetti = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(500))
+            withAnimation(.easeOut(duration: 1.8)) { burst = true }
+            try? await Task.sleep(for: .seconds(2.2))
+            showConfetti = false
+            burst = false
+        }
     }
 
     private var stageDescription: String {
         switch n {
         case 0: "A little sprout in the pot. Add a SunDrop to help it grow."
-        case 1: "The sprout is growing."
-        case 2..<(Self.bloomAt - 2): "A leafy plant with \(leafCount) leaves."
-        case Self.bloomAt - 2: "A flower bud is forming."
-        case Self.bloomAt - 1: "The sunflower is starting to open."
+        case 1..<(Self.bloomAt - 1): "A growing plant with \(leafCount) \(leafCount == 1 ? "leaf" : "leaves")."
+        case Self.bloomAt - 1: "A sunflower bud has popped up."
         default: "A sunflower in full bloom!"
         }
     }
@@ -82,8 +131,8 @@ struct PlantView: View {
                 .position(x: 40, y: 94 - stemHeight / 2 + 2)
 
             // Sprout seed leaves (before the first real leaves)
-            if n < 2 {
-                let sc: CGFloat = n == 0 ? 6.5 : 8
+            if n == 0 {
+                let sc: CGFloat = 6.5
                 PlantLeaf().frame(width: sc * 2, height: sc)
                     .rotationEffect(.degrees(-25)).position(x: 40 - sc - 1, y: headY + 3)
                 PlantLeaf().frame(width: sc * 2, height: sc)
@@ -93,7 +142,7 @@ struct PlantView: View {
             // Leaves
             ForEach(0..<leafCount, id: \.self) { i in
                 let left = i.isMultiple(of: 2)
-                let offset = min(CGFloat(10 + i * 6), stemHeight - 4)
+                let offset = min(CGFloat(12 + i * 9), stemHeight - 5)
                 PlantLeaf()
                     .frame(width: 22, height: 11)
                     .rotationEffect(.degrees(left ? -28 : 28))
@@ -102,7 +151,7 @@ struct PlantView: View {
             }
 
             // Bud and sunflower
-            if n >= Self.bloomAt - 2 {
+            if n >= Self.bloomAt - 1 {
                 head
                     .position(x: 40, y: headY)
                     .transition(.scale(scale: 0.3).combined(with: .opacity))
@@ -111,9 +160,14 @@ struct PlantView: View {
         .frame(width: 80, height: 130)
     }
 
+    private static let seedSpots: [CGPoint] = [
+        CGPoint(x: -4, y: -3), CGPoint(x: 4, y: -3), CGPoint(x: 0, y: 1),
+        CGPoint(x: -5, y: 4), CGPoint(x: 5, y: 4)
+    ]
+
     private var head: some View {
         ZStack {
-            if openness > 0 {
+            if isBloomed {
                 ForEach(0..<12, id: \.self) { k in
                     Ellipse()
                         .fill(LinearGradient(
@@ -123,18 +177,15 @@ struct PlantView: View {
                         .offset(y: -17)
                         .rotationEffect(.degrees(Double(k) * 30))
                 }
-                .scaleEffect(openness)
                 Circle()
                     .fill(RadialGradient(
                         colors: [Color(hex: 0x8A5A3C), Color(hex: 0x4E2E1E)],
                         center: UnitPoint(x: 0.4, y: 0.35), startRadius: 0, endRadius: 14))
                     .frame(width: 22, height: 22)
-                if openness == 1 {
-                    ForEach(Array([(-4.0, -3.0), (4, -3), (0, 1), (-5, 4), (5, 4)].enumerated()), id: \.offset) { _, p in
-                        Circle().fill(Color(hex: 0x5A3322).opacity(0.75))
-                            .frame(width: 2.4, height: 2.4)
-                            .offset(x: p.0, y: p.1)
-                    }
+                ForEach(0..<Self.seedSpots.count, id: \.self) { i in
+                    Circle().fill(Color(hex: 0x5A3322).opacity(0.75))
+                        .frame(width: 2.4, height: 2.4)
+                        .offset(x: Self.seedSpots[i].x, y: Self.seedSpots[i].y)
                 }
             } else {
                 // Closed bud
@@ -217,7 +268,7 @@ private struct PlantHop {
 #Preview("Plant stages") {
     ScrollView(.horizontal) {
         HStack(spacing: 16) {
-            ForEach([0, 1, 3, 5, 7, 8, 9, 10], id: \.self) { PlantView(count: $0) }
+            ForEach([0, 1, 2, 3, 5, 6, 7], id: \.self) { PlantView(count: $0) }
         }
         .padding()
     }
