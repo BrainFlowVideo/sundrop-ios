@@ -28,7 +28,7 @@ final class HomeViewModel {
 
     private(set) var isDropping = false
 
-    // Frog cheer
+    // Plant cheer
     static let cheers = [
         "You are glowing today!",
         "Little joys add up. Keep going!",
@@ -37,7 +37,7 @@ final class HomeViewModel {
         "Proud of you for noticing the good."
     ]
     var cheerMessage: String?
-    var frogHopTrigger = 0
+    var plantHopTrigger = 0
     private var lastCheerIndex: Int?
     private var cheerTask: Task<Void, Never>?
 
@@ -47,7 +47,7 @@ final class HomeViewModel {
         showAddSheet = true
     }
 
-    /// Makes the frog hop and shows a random positive message (never the same one twice in a row).
+    /// Makes the plant hop and shows a random positive message (never the same one twice in a row).
     func cheerUp() {
         var index = Int.random(in: 0..<Self.cheers.count)
         while index == lastCheerIndex { index = Int.random(in: 0..<Self.cheers.count) }
@@ -55,7 +55,7 @@ final class HomeViewModel {
         let message = Self.cheers[index]
 
         UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        frogHopTrigger += 1
+        plantHopTrigger += 1
         withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) { cheerMessage = message }
         UIAccessibility.post(notification: .announcement, argument: message)
 

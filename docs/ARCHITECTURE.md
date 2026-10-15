@@ -36,7 +36,7 @@ SunDrop/
 │   └── HomeViewModel.swift
 ├── Views/
 │   ├── Onboarding/OnboardingView.swift
-│   ├── Home/ HomeView, JarView, FrogView, CheerBubble, SparkleField
+│   ├── Home/ HomeView, JarView, PlantView, CheerBubble, SparkleField
 │   ├── Entry/ AddSunDropSheet, CameraCapture
 │   ├── Review/ RecapView, ReminisceView, EntryVideoPlayer
 │   └── Settings/SettingsView.swift

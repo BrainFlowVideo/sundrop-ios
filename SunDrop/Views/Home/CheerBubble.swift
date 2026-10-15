@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Speech bubble that pops up over the frog with a little cheer.
+/// Speech bubble that pops up over the plant with a little cheer.
 struct CheerBubble: View {
     let text: String
 
@@ -21,7 +21,7 @@ struct CheerBubble: View {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .strokeBorder(Color.sunInk.opacity(0.2), lineWidth: 1.5))
             .background(alignment: .bottomTrailing) {
-                // Little tail pointing down at the frog
+                // Little tail pointing down at the plant
                 Rectangle()
                     .fill(Color.sunSurface)
                     .frame(width: 14, height: 14)

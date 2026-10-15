@@ -19,11 +19,11 @@ final class HomeViewModelTests: XCTestCase {
         }
     }
 
-    func testCheerTriggersFrogHop() {
+    func testCheerTriggersPlantHop() {
         let vm = HomeViewModel()
-        let before = vm.frogHopTrigger
+        let before = vm.plantHopTrigger
         vm.cheerUp()
-        XCTAssertEqual(vm.frogHopTrigger, before + 1)
+        XCTAssertEqual(vm.plantHopTrigger, before + 1)
     }
 
     func testOpenAddShowsSheet() {

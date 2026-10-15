@@ -45,7 +45,7 @@ struct HomeView: View {
                         .onTapGesture { vm.openAdd() }
                         .accessibilityAddTraits(.isButton)
                         .accessibilityHint("Opens the add SunDrop screen")
-                    FrogView(leaves: min(vm.streak(entries: entries), 6), hopTrigger: vm.frogHopTrigger)
+                    PlantView(count: entries.count, hopTrigger: vm.plantHopTrigger)
                         .padding(.bottom, 4)
                         .onTapGesture { vm.cheerUp() }
                         .accessibilityAddTraits(.isButton)

@@ -7,7 +7,7 @@ Built with SwiftUI, SwiftData and the Observation framework. Everything is store
 ## Features
 
 - **Skeuomorphic jar** that fills with paper slips, winks and squishes when you add a SunDrop, with a spring-physics drop animation. Tap the jar to add one
-- **Chubby pastel blue frog** with a sprout that grows a leaf for each day of your streak. Tap the frog for one of five little cheers. Floating sparkles too
+- **Growing plant** in a cute pot: it grows a little with every SunDrop, leaves pop out from the third drop, a bud forms at ten and a sunflower blooms at twelve. Tap the pot for one of five little cheers. Floating sparkles too
 - **Onboarding** in four pages: welcome, your name, daily reminder time, weekly or monthly review
 - **Multi-media entries**: a note, category tags, a photo or a short video, captured with the **camera** or picked from your library
 - **Day and Night modes**: a pale gold and frost sunrise by day, a deep teal evening by night; follow the system or choose in Settings
@@ -74,7 +74,7 @@ SunDrop/
 ├── Models/         SwiftData entry, enums, settings keys
 ├── Services/       Notifications, review dates, streaks, media files
 ├── ViewModels/     Onboarding and Home logic
-├── Views/          Onboarding, Home (jar, frog, sparkles), Entry, Review, Settings
+├── Views/          Onboarding, Home (jar, plant, sparkles), Entry, Review, Settings
 └── Resources/      Asset catalog (accent color, app icon)
 SunDropTests/       Unit tests
 docs/ARCHITECTURE.md
