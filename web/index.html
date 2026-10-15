@@ -290,7 +290,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .bloom-new { transform-box: fill-box; transform-origin: 50% 50%; animation: bloomIn .9s cubic-bezier(.3, 1.7, .5, 1); }
 @keyframes bloomIn { from { transform: scale(.3); opacity: 0; } }
 @keyframes sway { from { transform: rotate(-1.6deg); } to { transform: rotate(1.6deg); } }
-.leaf-new { transform-box: fill-box; transform-origin: 50% 100%; animation: leafIn .7s cubic-bezier(.3, 1.8, .5, 1); }
+.leaf-new { animation: leafIn .7s cubic-bezier(.3, 1.8, .5, 1); }
 @keyframes leafIn { from { transform: scale(.1); opacity: 0; } }
 .count { text-align: center; margin: 14px 0 0; font-weight: 800; font-size: 14.5px; color: var(--ink); opacity: .78; }
 .home-actions { padding: 14px 28px 0; display: grid; gap: 12px; justify-items: center; }
@@ -660,12 +660,13 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
     for (var i = 0; i < L; i++) {
       var left = i % 2 === 0, off = Math.min(16 + i * 40, h - 14), y = 94 - off, x = left ? 24 : 56;
       var isNew = grew && i === L - 1 && n < BLOOM_AT;
-      leaves += '<ellipse class="' + (isNew ? 'leaf-new' : '') + '" cx="' + x + '" cy="' + y + '" rx="16" ry="8" fill="url(#leafG)" transform="rotate(' + (left ? -28 : 28) + ' ' + x + ' ' + y + ')"/>';
+      leaves += '<g class="' + (isNew ? 'leaf-new' : '') + '" style="transform-origin:40px ' + y + 'px"><ellipse cx="' + x + '" cy="' + y + '" rx="16" ry="8" fill="url(#leafG)" transform="rotate(' + (left ? -28 : 28) + ' ' + x + ' ' + y + ')"/></g>';
     }
     if (n === 0) {
       var sc = 6.5;
-      leaves += '<ellipse class="' + (grew ? 'leaf-new' : '') + '" cx="' + (40 - sc - 1) + '" cy="' + (top + 3) + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(-25 ' + (40 - sc - 1) + ' ' + (top + 3) + ')"/>' +
-        '<ellipse class="' + (grew ? 'leaf-new' : '') + '" cx="' + (40 + sc + 1) + '" cy="' + (top + 3) + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(25 ' + (40 + sc + 1) + ' ' + (top + 3) + ')"/>';
+      var lx = 40 - sc - 1, rx2 = 40 + sc + 1, ly = top + 3;
+      leaves += '<g class="' + (grew ? 'leaf-new' : '') + '" style="transform-origin:40px ' + ly + 'px"><ellipse cx="' + lx + '" cy="' + ly + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(-25 ' + lx + ' ' + ly + ')"/></g>' +
+        '<g class="' + (grew ? 'leaf-new' : '') + '" style="transform-origin:40px ' + ly + 'px"><ellipse cx="' + rx2 + '" cy="' + ly + '" rx="' + sc + '" ry="' + (sc / 2) + '" fill="url(#leafG)" transform="rotate(25 ' + rx2 + ' ' + ly + ')"/></g>';
     }
     var head = '';
     if (n >= BLOOM_AT - 1) {
