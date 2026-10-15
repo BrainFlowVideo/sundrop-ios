@@ -19,8 +19,9 @@ struct ReminisceView: View {
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(height: 180)
                                 .frame(maxWidth: .infinity)
+                                .frame(height: 180)
+                                .clipped()
                                 .clipShape(RoundedRectangle(cornerRadius: 10))
                         }
                         if let video = entry.videoFilename, MediaStore.videoExists(video) {

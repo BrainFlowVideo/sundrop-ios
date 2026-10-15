@@ -325,7 +325,7 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
 .chip:focus-within { outline: 3px solid var(--ring); outline-offset: 2px; }
 .hint { margin: 0; font-size: 12.5px; font-weight: 600; opacity: .7; }
 .photo-prev { position: relative; transform: rotate(-1.5deg); border: 4px solid #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 6px 12px var(--shadow); }
-.photo-prev img, .photo-prev video, .entry img, .entry video { display: block; width: 100%; max-height: 190px; object-fit: cover; }
+.photo-prev img, .photo-prev video, .entry img, .entry video, .memory img, .memory video { display: block; width: 100%; max-height: 190px; object-fit: cover; }
 .x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: rgba(0, 0, 0, .55); color: #fff; font-size: 18px; line-height: 1; }
 .vid-row { display: flex; align-items: center; gap: 10px; background: var(--surface); border-radius: 14px; padding: 10px 12px; font-weight: 800; }
 .vid-row .x { position: static; margin-left: auto; }
@@ -344,7 +344,9 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
 .big span { font: 800 15px var(--font-display); }
 .row { display: flex; justify-content: space-between; background: var(--surface); border-radius: 14px; padding: 10px 12px; font-weight: 800; }
 .entry { background: var(--surface); border-radius: 16px; padding: 12px; display: grid; gap: 8px; box-shadow: 0 2px 4px var(--shadow); }
-.entry img, .entry video { border-radius: 10px; }
+.entry img, .entry video, .memory img, .memory video { border-radius: 10px; }
+.memory img, .memory video { max-height: 260px; }
+.sheet { touch-action: pan-y; }
 .entry p { margin: 0; font-weight: 700; }
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--surface); border: 1px solid var(--edge); border-radius: 12px; padding: 3px; gap: 3px; }
 .seg button { border: 0; background: none; border-radius: 9px; padding: 8px 6px; font-weight: 800; color: var(--ink); }
@@ -700,6 +702,23 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
     wrap.id = 'sheetWrap'; wrap.style.cssText = 'position:absolute;inset:0;pointer-events:auto';
     layer.appendChild(wrap);
     inner.querySelectorAll('[data-close]').forEach(function (b) { b.addEventListener('click', function () { closeSheet(); }); });
+    var y0 = null, dy = 0, body = inner.querySelector('.sheet-body');
+    sheet.addEventListener('touchstart', function (ev) {
+      var t = ev.target;
+      if (t.closest && t.closest('input,textarea,video')) { y0 = null; return; }
+      if (body && body.contains(t) && body.scrollTop > 0) { y0 = null; return; }
+      y0 = ev.touches[0].clientY; dy = 0; sheet.style.animation = 'none';
+    }, { passive: true });
+    sheet.addEventListener('touchmove', function (ev) {
+      if (y0 === null) return;
+      dy = ev.touches[0].clientY - y0;
+      if (dy > 0) { sheet.style.transition = 'none'; sheet.style.transform = 'translateY(' + dy + 'px)'; }
+    }, { passive: true });
+    sheet.addEventListener('touchend', function () {
+      if (y0 === null) return; y0 = null;
+      if (dy > 90) { closeSheet(); }
+      else { sheet.style.transition = 'transform .2s'; sheet.style.transform = ''; }
+    });
     if (onMount) onMount(inner);
   }
   function closeSheet(instant) {
@@ -784,7 +803,7 @@ textarea.field { text-align: left; font: 600 16px var(--font-body); resize: none
       setTimeout(function () { winking = false; renderJar(false); }, 900); return;
     }
     var e = state.entries[Math.floor(Math.random() * state.entries.length)];
-    var v = el('<div class="sheet-bar"><span style="width:56px"></span><strong>A memory from your jar</strong><span style="width:56px"></span></div>' +
+    var v = el('<div class="sheet-bar"><button class="bar-btn" data-close aria-label="Close">Close</button><strong>A memory from your jar</strong><span style="width:56px"></span></div>' +
       '<div class="sheet-body"><div class="memory">' + mediaHTML(e) + (e.text ? '<p>' + esc(e.text) + '</p>' : '') +
       (tagLine(e) ? '<span class="tagline">' + tagLine(e) + '</span>' : '') +
       '<span class="meta">' + new Date(e.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + '</span></div>' +
