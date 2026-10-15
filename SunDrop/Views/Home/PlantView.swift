@@ -21,18 +21,24 @@ struct PlantView: View {
     private let stemColor = Color(hex: 0x4F9D5D)
 
     private var n: Int { max(0, count) }
-    private var stemHeight: CGFloat { min(20 + CGFloat(n) * 7.5, 58) }
+    /// Stem height in points for each number of drops. It shoots up and ends taller than the jar.
+    private static let heights: [CGFloat] = [20, 70, 118, 160, 198, 236, 262, 276]
+    /// Extra drawing space above the pot, so the plant can grow past its layout frame.
+    private static let lift: CGFloat = 300
+    private var stemHeight: CGFloat { Self.heights[min(n, Self.heights.count - 1)] }
     private var leafCount: Int { min(n, 5) }
     private var isBloomed: Bool { n >= Self.bloomAt }
-    private var headY: CGFloat { 94 - stemHeight }
+    private var soilY: CGFloat { Self.lift + 94 }
+    private var headY: CGFloat { soilY - stemHeight }
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottom) {
             plant
-                .rotationEffect(.degrees(sway ? 3 : -3), anchor: UnitPoint(x: 0.5, y: 94.0 / 130.0))
+                .rotationEffect(.degrees(sway ? 1.6 : -1.6),
+                                anchor: UnitPoint(x: 0.5, y: soilY / (130 + Self.lift)))
             pot
         }
-        .frame(width: 80, height: 130)
+        .frame(width: 80, height: 130, alignment: .bottom)
         .animation(.spring(response: 0.7, dampingFraction: 0.6), value: n)
         .keyframeAnimator(initialValue: PlantHop(), trigger: hopTrigger) { content, value in
             content
@@ -91,7 +97,7 @@ struct PlantView: View {
                 }
             }
             .frame(width: 1, height: 1)
-            .offset(y: 30)
+            .offset(y: 94 - Self.heights[Self.heights.count - 1])
             .allowsHitTesting(false)
             .accessibilityHidden(true)
         }
@@ -120,15 +126,15 @@ struct PlantView: View {
         }
     }
 
-    // MARK: Plant (80 x 130 space; soil line at y = 94)
+    // MARK: Plant (80 wide, grows upward from the soil line)
 
     private var plant: some View {
         ZStack {
             // Stem
             Capsule()
                 .fill(stemColor)
-                .frame(width: 5, height: stemHeight + 4)
-                .position(x: 40, y: 94 - stemHeight / 2 + 2)
+                .frame(width: 6, height: stemHeight + 4)
+                .position(x: 40, y: soilY - stemHeight / 2 + 2)
 
             // Sprout seed leaves (before the first real leaves)
             if n == 0 {
@@ -142,22 +148,23 @@ struct PlantView: View {
             // Leaves
             ForEach(0..<leafCount, id: \.self) { i in
                 let left = i.isMultiple(of: 2)
-                let offset = min(CGFloat(12 + i * 9), stemHeight - 5)
+                let offset = min(CGFloat(16 + i * 40), stemHeight - 14)
                 PlantLeaf()
-                    .frame(width: 22, height: 11)
+                    .frame(width: 32, height: 16)
                     .rotationEffect(.degrees(left ? -28 : 28))
-                    .position(x: left ? 27 : 53, y: 94 - offset)
+                    .position(x: left ? 24 : 56, y: soilY - offset)
                     .transition(.scale(scale: 0.1).combined(with: .opacity))
             }
 
             // Bud and sunflower
             if n >= Self.bloomAt - 1 {
                 head
+                    .scaleEffect(1.3)
                     .position(x: 40, y: headY)
                     .transition(.scale(scale: 0.3).combined(with: .opacity))
             }
         }
-        .frame(width: 80, height: 130)
+        .frame(width: 80, height: 130 + Self.lift)
     }
 
     private static let seedSpots: [CGPoint] = [
